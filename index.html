@@ -1967,586 +1967,612 @@
         </footer>
     </div>
 
-    <!-- Main JavaScript -->
-    <script>
-        // DOM Elements
-        const wishForm = document.getElementById('wishForm');
-        const wishesList = document.getElementById('wishesList');
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toastMessage');
-        const playBtn = document.getElementById('playBtn');
-        const birthdaySong = document.getElementById('birthdaySong');
-        const birthdayPerson = document.getElementById('birthdayPerson');
-        const footerName = document.getElementById('footerName');
-        const memoryUpload = document.getElementById('memoryUpload');
-        const imagePreview = document.getElementById('imagePreview');
-        const previewImage = document.getElementById('previewImage');
-        const memoryUrlInput = document.getElementById('memoryUrl');
-        const urlInputContainer = document.getElementById('urlInputContainer');
-        const cracklesContainer = document.getElementById('cracklesContainer');
-        const celebrationOverlay = document.getElementById('celebrationOverlay');
-        const celebrationConfetti = document.getElementById('celebrationConfetti');
+    <!-- Main JavaScript with Firebase -->
+<script>
+    // FIREBASE CONFIGURATION - YAHAN SE START
+    const firebaseConfig = {
+        apiKey: "AIzaSyCLE0V86QwtGM4T-xR9VNQh8a6eM6lQCrA",
+        authDomain: "laiba-00.firebaseapp.com",
+        databaseURL: "https://laiba-00-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "laiba-00",
+        storageBucket: "laiba-00.firebasestorage.app",
+        messagingSenderId: "483377362620",
+        appId: "1:483377362620:web:8f52dc9fc00ee232e0c2b9",
+        measurementId: "G-Y421LWYG6T"
+    };
 
-        // Stats Elements
-        const totalWishesEl = document.getElementById('totalWishes');
-        const totalLikesEl = document.getElementById('totalLikes');
-        const wishersTodayEl = document.getElementById('wishersToday');
-        const celebrationLevelEl = document.getElementById('celebrationLevel');
-        const birthdayMeter = document.getElementById('birthdayMeter');
-        const meterText = document.getElementById('meterText');
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-        // Countdown Elements
-        const daysEl = document.getElementById('days');
-        const hoursEl = document.getElementById('hours');
-        const minutesEl = document.getElementById('minutes');
-        const secondsEl = document.getElementById('seconds');
+    // DOM Elements
+    const wishForm = document.getElementById('wishForm');
+    const wishesList = document.getElementById('wishesList');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    const playBtn = document.getElementById('playBtn');
+    const birthdaySong = document.getElementById('birthdaySong');
+    const birthdayPerson = document.getElementById('birthdayPerson');
+    const footerName = document.getElementById('footerName');
+    const memoryUpload = document.getElementById('memoryUpload');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImage = document.getElementById('previewImage');
+    const memoryUrlInput = document.getElementById('memoryUrl');
+    const urlInputContainer = document.getElementById('urlInputContainer');
+    const cracklesContainer = document.getElementById('cracklesContainer');
+    const celebrationOverlay = document.getElementById('celebrationOverlay');
+    const celebrationConfetti = document.getElementById('celebrationConfetti');
 
-        // Surprise Countdown Elements
-        const surpriseDaysEl = document.getElementById('surprise-days');
-        const surpriseHoursEl = document.getElementById('surprise-hours');
-        const surpriseMinutesEl = document.getElementById('surprise-minutes');
-        const surpriseSecondsEl = document.getElementById('surprise-seconds');
+    // Stats Elements
+    const totalWishesEl = document.getElementById('totalWishes');
+    const totalLikesEl = document.getElementById('totalLikes');
+    const wishersTodayEl = document.getElementById('wishersToday');
+    const celebrationLevelEl = document.getElementById('celebrationLevel');
+    const birthdayMeter = document.getElementById('birthdayMeter');
+    const meterText = document.getElementById('meterText');
 
-        // Configuration
-        const BIRTHDAY_NAME = "LAIBA";
-        const BIRTHDAY_DATE = "February 16, 2026 00:00:00";
-        const SURPRISE_UNLOCK_DATE = "February 3, 2026 00:00:00";
-        const PAGE_TITLE = "Happy Birthday Meri Jaan! 🎉";
+    // Countdown Elements
+    const daysEl = document.getElementById('days');
+    const hoursEl = document.getElementById('hours');
+    const minutesEl = document.getElementById('minutes');
+    const secondsEl = document.getElementById('seconds');
 
-        // Set page title and name
-        document.title = PAGE_TITLE;
-        birthdayPerson.textContent = BIRTHDAY_NAME;
-        footerName.textContent = BIRTHDAY_NAME;
+    // Surprise Countdown Elements
+    const surpriseDaysEl = document.getElementById('surprise-days');
+    const surpriseHoursEl = document.getElementById('surprise-hours');
+    const surpriseMinutesEl = document.getElementById('surprise-minutes');
+    const surpriseSecondsEl = document.getElementById('surprise-seconds');
 
-        // Initialize variables
-        let isPlaying = false;
-        let totalWishes = 0;
-        let totalLikes = 0;
-        let wishesToday = 0;
-        let currentImageData = null;
-        let celebrationActive = false;
+    // Configuration
+    const BIRTHDAY_NAME = "LAIBA";
+    const BIRTHDAY_DATE = "February 16, 2026 00:00:00";
+    const SURPRISE_UNLOCK_DATE = "February 3, 2026 00:00:00";
+    const PAGE_TITLE = "Happy Birthday Meri Jaan! 🎉";
 
-        // NEW: Crackles/Sparkles Effect
-        function createCrackles() {
-            if (celebrationActive) return;
-            
-            celebrationActive = true;
-            const crackleColors = ['gold', 'silver', 'pink', 'purple', 'red'];
-            
-            // Create 150 crackles at different positions
-            for (let i = 0; i < 150; i++) {
-                setTimeout(() => {
-                    const crackle = document.createElement('div');
-                    crackle.className = `crackle ${crackleColors[Math.floor(Math.random() * crackleColors.length)]}`;
-                    
-                    // Random starting position at bottom of screen
-                    const startX = Math.random() * window.innerWidth;
-                    crackle.style.left = `${startX}px`;
-                    crackle.style.bottom = '0px';
-                    
-                    // Random animation duration
-                    const duration = 1 + Math.random() * 1.5;
-                    crackle.style.animationDuration = `${duration}s`;
-                    
-                    // Random size
-                    const size = 3 + Math.random() * 5;
-                    crackle.style.width = `${size}px`;
-                    crackle.style.height = `${size}px`;
-                    
-                    cracklesContainer.appendChild(crackle);
-                    
-                    // Remove crackle after animation completes
-                    setTimeout(() => {
-                        if (crackle.parentNode) {
-                            crackle.parentNode.removeChild(crackle);
-                        }
-                    }, duration * 1000);
-                    
-                }, i * 20); // Stagger the creation
-            }
-            
-            // Continue crackles for 5 seconds
+    // Set page title and name
+    document.title = PAGE_TITLE;
+    birthdayPerson.textContent = BIRTHDAY_NAME;
+    footerName.textContent = BIRTHDAY_NAME;
+
+    // Initialize variables
+    let isPlaying = false;
+    let totalWishes = 0;
+    let totalLikes = 0;
+    let wishesToday = 0;
+    let currentImageData = null;
+    let celebrationActive = false;
+
+    // NEW: Crackles/Sparkles Effect
+    function createCrackles() {
+        if (celebrationActive) return;
+        
+        celebrationActive = true;
+        const crackleColors = ['gold', 'silver', 'pink', 'purple', 'red'];
+        
+        // Create 150 crackles at different positions
+        for (let i = 0; i < 150; i++) {
             setTimeout(() => {
-                celebrationActive = false;
-            }, 5000);
-        }
-
-        // NEW: Create Confetti
-        function createConfetti() {
-            // Clear existing confetti
-            celebrationConfetti.innerHTML = '';
-            
-            // Create 50 confetti pieces
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti-piece';
+                const crackle = document.createElement('div');
+                crackle.className = `crackle ${crackleColors[Math.floor(Math.random() * crackleColors.length)]}`;
                 
-                // Random position
-                confetti.style.left = `${Math.random() * 100}%`;
+                // Random starting position at bottom of screen
+                const startX = Math.random() * window.innerWidth;
+                crackle.style.left = `${startX}px`;
+                crackle.style.bottom = '0px';
                 
-                // Random animation delay
-                confetti.style.animationDelay = `${Math.random() * 1}s`;
+                // Random animation duration
+                const duration = 1 + Math.random() * 1.5;
+                crackle.style.animationDuration = `${duration}s`;
                 
                 // Random size
-                const size = 5 + Math.random() * 10;
-                confetti.style.width = `${size}px`;
-                confetti.style.height = `${size}px`;
+                const size = 3 + Math.random() * 5;
+                crackle.style.width = `${size}px`;
+                crackle.style.height = `${size}px`;
                 
-                // Random rotation
-                const rotation = Math.random() * 360;
-                confetti.style.transform = `rotate(${rotation}deg)`;
+                cracklesContainer.appendChild(crackle);
                 
-                celebrationConfetti.appendChild(confetti);
-                
-                // Remove confetti after animation
+                // Remove crackle after animation completes
                 setTimeout(() => {
-                    if (confetti.parentNode) {
-                        confetti.parentNode.removeChild(confetti);
+                    if (crackle.parentNode) {
+                        crackle.parentNode.removeChild(crackle);
                     }
-                }, 3000);
-            }
+                }, duration * 1000);
+                
+            }, i * 20); // Stagger the creation
         }
+        
+        // Continue crackles for 5 seconds
+        setTimeout(() => {
+            celebrationActive = false;
+        }, 5000);
+    }
 
-        // NEW: Close celebration overlay
-        function closeCelebration() {
-            celebrationOverlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Show toast notification
-        function showToast(message, type = 'success') {
-            toastMessage.textContent = message;
-            toast.className = 'toast';
-            toast.classList.add('show');
+    // NEW: Create Confetti
+    function createConfetti() {
+        // Clear existing confetti
+        celebrationConfetti.innerHTML = '';
+        
+        // Create 50 confetti pieces
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti-piece';
             
-            if (type === 'error') {
-                toast.style.background = 'linear-gradient(45deg, #ff4757, #ff6b81)';
-            }
+            // Random position
+            confetti.style.left = `${Math.random() * 100}%`;
             
+            // Random animation delay
+            confetti.style.animationDelay = `${Math.random() * 1}s`;
+            
+            // Random size
+            const size = 5 + Math.random() * 10;
+            confetti.style.width = `${size}px`;
+            confetti.style.height = `${size}px`;
+            
+            // Random rotation
+            const rotation = Math.random() * 360;
+            confetti.style.transform = `rotate(${rotation}deg)`;
+            
+            celebrationConfetti.appendChild(confetti);
+            
+            // Remove confetti after animation
             setTimeout(() => {
-                toast.classList.remove('show');
+                if (confetti.parentNode) {
+                    confetti.parentNode.removeChild(confetti);
+                }
             }, 3000);
         }
+    }
 
-        // Format date
-        function formatDate(timestamp) {
-            const date = new Date(timestamp);
-            const now = new Date();
-            const diff = now - date;
-            
-            if (diff < 60000) {
-                return 'Just now';
-            }
-            
-            if (diff < 3600000) {
-                const minutes = Math.floor(diff / 60000);
-                return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-            }
-            
-            if (date.toDateString() === now.toDateString()) {
-                return `Today at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            }
-            
-            const yesterday = new Date(now);
-            yesterday.setDate(yesterday.getDate() - 1);
-            if (date.toDateString() === yesterday.toDateString()) {
-                return `Yesterday at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
-            }
-            
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    // NEW: Close celebration overlay
+    function closeCelebration() {
+        celebrationOverlay.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'success') {
+        toastMessage.textContent = message;
+        toast.className = 'toast';
+        toast.classList.add('show');
+        
+        if (type === 'error') {
+            toast.style.background = 'linear-gradient(45deg, #ff4757, #ff6b81)';
         }
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
 
-        // Submit wish form
-        wishForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('name').value.trim();
-            const message = document.getElementById('message').value.trim();
-            
-            if (!name || !message) {
-                showToast('Please fill in all fields', 'error');
-                return;
-            }
-            
-            // Create wish object
-            const wish = {
-                name: name,
-                message: message,
-                timestamp: Date.now(),
-                likes: 0,
-                likedBy: []
-            };
-            
-            // Add to the list
-            addWishToDOM(wish);
-            wishForm.reset();
-            
-            showToast('Your wish has been sent! 🎉');
-            
-            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-happy-crowd-laugh-464.mp3');
-            audio.volume = 0.3;
-            audio.play();
-        });
+    // Format date
+    function formatDate(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now - date;
+        
+        if (diff < 60000) {
+            return 'Just now';
+        }
+        
+        if (diff < 3600000) {
+            const minutes = Math.floor(diff / 60000);
+            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        }
+        
+        if (date.toDateString() === now.toDateString()) {
+            return `Today at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        }
+        
+        const yesterday = new Date(now);
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (date.toDateString() === yesterday.toDateString()) {
+            return `Yesterday at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        }
+        
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
 
-        // Add wish to DOM
-        function addWishToDOM(wish) {
-            const wishItem = document.createElement('div');
-            wishItem.className = 'wish-item';
-            wishItem.innerHTML = `
-                <div class="wish-header">
-                    <div class="wish-name">${wish.name}</div>
-                    <div class="wish-time">Just now</div>
-                </div>
-                <div class="wish-message">${wish.message}</div>
-                <button class="like-btn" onclick="likeWish(this)">
-                    <i class="fas fa-heart"></i> <span class="like-count">0</span>
-                </button>
-            `;
+    // Wishes load from Firebase - YEH IMPORTANT HAI
+    function loadWishesFromFirebase() {
+        database.ref('wishes').on('value', (snapshot) => {
+            wishesList.innerHTML = '';
+            const wishes = [];
+            let totalLikesCount = 0;
             
-            // Add to beginning of list
-            if (wishesList.children.length === 0) {
+            snapshot.forEach((childSnapshot) => {
+                const wish = childSnapshot.val();
+                wish.id = childSnapshot.key;
+                wishes.push(wish);
+                totalLikesCount += wish.likes || 0;
+            });
+            
+            // Sort by timestamp (newest first)
+            wishes.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Add to DOM
+            wishes.forEach((wish) => {
+                const wishItem = document.createElement('div');
+                wishItem.className = 'wish-item';
+                wishItem.innerHTML = `
+                    <div class="wish-header">
+                        <div class="wish-name">${wish.name}</div>
+                        <div class="wish-time">${formatDate(wish.timestamp)}</div>
+                    </div>
+                    <div class="wish-message">${wish.message}</div>
+                    <button class="like-btn" onclick="likeWish('${wish.id}', ${wish.likes || 0})" id="likeBtn-${wish.id}">
+                        <i class="fas fa-heart"></i> <span class="like-count" id="likeCount-${wish.id}">${wish.likes || 0}</span>
+                    </button>
+                `;
                 wishesList.appendChild(wishItem);
-            } else {
-                wishesList.insertBefore(wishItem, wishesList.firstChild);
-            }
+            });
             
             // Update stats
-            updateStats();
-        }
-
-        // Like a wish
-        function likeWish(button) {
-            const likeCount = button.querySelector('.like-count');
-            let count = parseInt(likeCount.textContent);
-            
-            if (button.classList.contains('liked')) {
-                count--;
-                button.classList.remove('liked');
-                button.style.background = 'transparent';
-                button.style.color = '#8a2be2';
-            } else {
-                count++;
-                button.classList.add('liked');
-                button.style.background = 'linear-gradient(45deg, #8a2be2, #9370db)';
-                button.style.color = 'white';
-                
-                const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3');
-                audio.volume = 0.2;
-                audio.play();
-            }
-            
-            likeCount.textContent = count;
-            totalLikes = document.querySelectorAll('.liked').length;
-            updateStats();
-        }
-
-        // Update statistics
-        function updateStats() {
-            totalWishes = document.querySelectorAll('.wish-item').length;
+            totalWishes = wishes.length;
             totalWishesEl.textContent = totalWishes;
+            totalLikes = totalLikesCount;
             totalLikesEl.textContent = totalLikes;
             
-            // Count actual wishers today
+            // Calculate today's wishes
             const today = new Date().toDateString();
-            const wishItems = document.querySelectorAll('.wish-item .wish-time');
             let todayCount = 0;
-            
-            // Check which wishes are from today
-            wishItems.forEach(timeElement => {
-                if (timeElement.textContent.includes('Today') || 
-                    timeElement.textContent.includes('Just now') ||
-                    timeElement.textContent.includes('minute') ||
-                    timeElement.textContent.includes('hour')) {
+            wishes.forEach(wish => {
+                const wishDate = new Date(wish.timestamp).toDateString();
+                if (wishDate === today) {
                     todayCount++;
                 }
             });
-            
             wishersTodayEl.textContent = todayCount;
             
+            // Update celebration level
             let level = '🎂';
             if (totalWishes > 20) level = '🎉';
             if (totalWishes > 50) level = '🎊';
             if (totalWishes > 100) level = '🥳';
             if (totalWishes > 200) level = '🎇';
-            
             celebrationLevelEl.textContent = level;
             
+            // Update meter
             const meterValue = Math.min(100, Math.floor((totalWishes / 100) * 100));
             birthdayMeter.style.width = meterValue + '%';
             meterText.textContent = `Birthday excitement: ${meterValue}%`;
-        }
-
-        // Music player control
-        playBtn.addEventListener('click', function() {
-            if (isPlaying) {
-                birthdaySong.pause();
-                playBtn.innerHTML = '<i class="fas fa-play"></i>';
-            } else {
-                birthdaySong.play().catch(e => {
-                    console.log("Audio play failed:", e);
-                });
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            }
-            isPlaying = !isPlaying;
         });
+    }
 
-        // Main countdown timer
-        function updateCountdown() {
-            const birthday = new Date(BIRTHDAY_DATE).getTime();
-            const now = new Date().getTime();
-            
-            let targetDate = new Date(BIRTHDAY_DATE);
-            if (targetDate.getTime() < now) {
-                targetDate.setFullYear(targetDate.getFullYear() + 1);
-            }
-            
-            const distance = targetDate.getTime() - now;
-            
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            daysEl.textContent = days.toString().padStart(2, '0');
-            hoursEl.textContent = hours.toString().padStart(2, '0');
-            minutesEl.textContent = minutes.toString().padStart(2, '0');
-            secondsEl.textContent = seconds.toString().padStart(2, '0');
-            
-            // Check if it's birthday
-            if (days === 0 && hours < 24) {
-                document.querySelector('.countdown-title').textContent = "It's Birthday Time! 🎉";
-                
-                if (hours === 0 && minutes === 0 && seconds < 10) {
-                    document.querySelector('.countdown-title').textContent = "Happy Birthday LAIBA! 🥳";
-                }
-            } else if (days === 1) {
-                document.querySelector('.countdown-title').textContent = "Birthday is Tomorrow! 🎊";
-            } else if (days < 7) {
-                document.querySelector('.countdown-title').textContent = `${days} Days to LAIBA's Birthday!`;
-            }
+    // Submit wish form - YEH FIREBASE KE SAATH HAI
+    wishForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const name = document.getElementById('name').value.trim();
+        const message = document.getElementById('message').value.trim();
+        
+        if (!name || !message) {
+            showToast('Please fill in all fields', 'error');
+            return;
         }
+        
+        // Firebase Realtime Database mein save karo
+        const newWishRef = database.ref('wishes').push();
+        newWishRef.set({
+            name: name,
+            message: message,
+            timestamp: Date.now(),
+            likes: 0,
+            likedBy: []
+        })
+        .then(() => {
+            showToast('Your wish has been sent! 🎉');
+            wishForm.reset();
+            
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-happy-crowd-laugh-464.mp3');
+            audio.volume = 0.3;
+            audio.play();
+        })
+        .catch((error) => {
+            console.error("Error saving wish: ", error);
+            showToast('Error saving wish', 'error');
+        });
+    });
 
-        // Surprise countdown timer
-        function updateSurpriseCountdown() {
-            const unlockDate = new Date(SURPRISE_UNLOCK_DATE).getTime();
-            const now = new Date().getTime();
+    // Like a wish - YEH FIREBASE KE SAATH HAI
+    function likeWish(wishId, currentLikes) {
+        const newLikes = currentLikes + 1;
+        
+        // Update in Firebase
+        database.ref('wishes/' + wishId).update({
+            likes: newLikes
+        })
+        .then(() => {
+            // Update UI
+            document.getElementById(`likeCount-${wishId}`).textContent = newLikes;
+            const likeBtn = document.getElementById(`likeBtn-${wishId}`);
+            likeBtn.classList.add('liked');
+            likeBtn.style.background = 'linear-gradient(45deg, #8a2be2, #9370db)';
+            likeBtn.style.color = 'white';
             
-            // Check if surprise should be unlocked
-            if (now >= unlockDate) {
-                document.getElementById('lockedState').classList.add('hidden');
-                document.getElementById('unlockedState').classList.remove('hidden');
-                document.getElementById('surpriseStatus').innerHTML = 
-                    '<p><i class="fas fa-gift"></i> Your surprise is ready! Click the heart!</p>';
-                return;
-            }
+            // Update total likes
+            totalLikes += 1;
+            totalLikesEl.textContent = totalLikes;
             
-            const distance = unlockDate - now;
-            
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-            surpriseDaysEl.textContent = days.toString().padStart(2, '0');
-            surpriseHoursEl.textContent = hours.toString().padStart(2, '0');
-            surpriseMinutesEl.textContent = minutes.toString().padStart(2, '0');
-            surpriseSecondsEl.textContent = seconds.toString().padStart(2, '0');
-        }
+            const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3');
+            audio.volume = 0.2;
+            audio.play();
+        })
+        .catch((error) => {
+            console.error("Error liking wish: ", error);
+        });
+    }
 
-        // Reveal secret message
-        function revealSecretMessage() {
-            document.getElementById('unlockedState').classList.add('hidden');
-            document.getElementById('revealedMessage').classList.remove('hidden');
-            document.getElementById('surpriseStatus').innerHTML = 
-                '<p><i class="fas fa-heart"></i> Your special message has been revealed!</p>';
-            
-            // Play celebration sound
-            const sound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-happy-crowd-laugh-464.mp3');
-            sound.volume = 0.4;
-            sound.play();
-            
-            // Scroll to the message
-            document.querySelector('.revealed-message').scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'center'
+    // Music player control
+    playBtn.addEventListener('click', function() {
+        if (isPlaying) {
+            birthdaySong.pause();
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        } else {
+            birthdaySong.play().catch(e => {
+                console.log("Audio play failed:", e);
             });
+            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
         }
+        isPlaying = !isPlaying;
+    });
 
-        // UPDATED: Start celebration with crackles
-        function startCelebration() {
-            // Play birthday song if not already playing
-            if (!isPlaying) {
-                birthdaySong.play();
-                isPlaying = true;
-                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            }
-            
-            // Start crackles effect
-            createCrackles();
-            
-            // Show celebration overlay after a short delay
-            setTimeout(() => {
-                celebrationOverlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-                createConfetti();
-                
-                // Play multiple celebration sounds
-                const sounds = [
-                    'https://assets.mixkit.co/sfx/preview/mixkit-happy-crowd-laugh-464.mp3',
-                    'https://assets.mixkit.co/sfx/preview/mixkit-balloon-pop-2925.mp3',
-                    'https://assets.mixkit.co/sfx/preview/mixkit-party-horn-sound-2927.mp3'
-                ];
-                
-                // Play sounds with delays
-                sounds.forEach((soundUrl, index) => {
-                    setTimeout(() => {
-                        const audio = new Audio(soundUrl);
-                        audio.volume = 0.3;
-                        audio.play();
-                    }, index * 500);
-                });
-            }, 500);
-            
-            showToast('🎉🎂 Celebration Time! Crackles activated! 🎂🎉');
+    // Main countdown timer
+    function updateCountdown() {
+        const birthday = new Date(BIRTHDAY_DATE).getTime();
+        const now = new Date().getTime();
+        
+        let targetDate = new Date(BIRTHDAY_DATE);
+        if (targetDate.getTime() < now) {
+            targetDate.setFullYear(targetDate.getFullYear() + 1);
         }
-
-        // Image upload functions
-        // URL button click handler
-        document.querySelector('.upload-btn[for="memoryUrlInput"]').addEventListener('click', function(e) {
-            e.preventDefault();
-            urlInputContainer.style.display = urlInputContainer.style.display === 'none' ? 'block' : 'none';
-        });
-
-        // Handle URL input
-        memoryUrlInput.addEventListener('input', function(e) {
-            if (e.target.value) {
-                previewImage.src = e.target.value;
-                imagePreview.style.display = 'block';
-                currentImageData = e.target.value;
-                
-                // Test if image loads
-                previewImage.onload = function() {
-                    showToast('Image loaded successfully!');
-                };
-                previewImage.onerror = function() {
-                    showToast('Failed to load image. Please check URL.', 'error');
-                };
-            } else {
-                imagePreview.style.display = 'none';
-                currentImageData = null;
-            }
-        });
-
-        // Handle file upload
-        memoryUpload.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        
+        const distance = targetDate.getTime() - now;
+        
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        daysEl.textContent = days.toString().padStart(2, '0');
+        hoursEl.textContent = hours.toString().padStart(2, '0');
+        minutesEl.textContent = minutes.toString().padStart(2, '0');
+        secondsEl.textContent = seconds.toString().padStart(2, '0');
+        
+        // Check if it's birthday
+        if (days === 0 && hours < 24) {
+            document.querySelector('.countdown-title').textContent = "It's Birthday Time! 🎉";
             
-            if (!file.type.match('image.*')) {
-                showToast('Please select an image file', 'error');
-                return;
+            if (hours === 0 && minutes === 0 && seconds < 10) {
+                document.querySelector('.countdown-title').textContent = "Happy Birthday LAIBA! 🥳";
             }
+        } else if (days === 1) {
+            document.querySelector('.countdown-title').textContent = "Birthday is Tomorrow! 🎊";
+        } else if (days < 7) {
+            document.querySelector('.countdown-title').textContent = `${days} Days to LAIBA's Birthday!`;
+        }
+    }
+
+    // Surprise countdown timer
+    function updateSurpriseCountdown() {
+        const unlockDate = new Date(SURPRISE_UNLOCK_DATE).getTime();
+        const now = new Date().getTime();
+        
+        // Check if surprise should be unlocked
+        if (now >= unlockDate) {
+            document.getElementById('lockedState').classList.add('hidden');
+            document.getElementById('unlockedState').classList.remove('hidden');
+            document.getElementById('surpriseStatus').innerHTML = 
+                '<p><i class="fas fa-gift"></i> Your surprise is ready! Click the heart!</p>';
+            return;
+        }
+        
+        const distance = unlockDate - now;
+        
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        surpriseDaysEl.textContent = days.toString().padStart(2, '0');
+        surpriseHoursEl.textContent = hours.toString().padStart(2, '0');
+        surpriseMinutesEl.textContent = minutes.toString().padStart(2, '0');
+        surpriseSecondsEl.textContent = seconds.toString().padStart(2, '0');
+    }
+
+    // Reveal secret message
+    function revealSecretMessage() {
+        document.getElementById('unlockedState').classList.add('hidden');
+        document.getElementById('revealedMessage').classList.remove('hidden');
+        document.getElementById('surpriseStatus').innerHTML = 
+            '<p><i class="fas fa-heart"></i> Your special message has been revealed!</p>';
+        
+        // Play celebration sound
+        const sound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-happy-crowd-laugh-464.mp3');
+        sound.volume = 0.4;
+        sound.play();
+        
+        // Scroll to the message
+        document.querySelector('.revealed-message').scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+
+    // UPDATED: Start celebration with crackles
+    function startCelebration() {
+        // Play birthday song if not already playing
+        if (!isPlaying) {
+            birthdaySong.play();
+            isPlaying = true;
+            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        }
+        
+        // Start crackles effect
+        createCrackles();
+        
+        // Show celebration overlay after a short delay
+        setTimeout(() => {
+            celebrationOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            createConfetti();
             
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                imagePreview.style.display = 'block';
-                currentImageData = e.target.result;
+            // Play multiple celebration sounds
+            const sounds = [
+                'https://assets.mixkit.co/sfx/preview/mixkit-happy-crowd-laugh-464.mp3',
+                'https://assets.mixkit.co/sfx/preview/mixkit-balloon-pop-2925.mp3',
+                'https://assets.mixkit.co/sfx/preview/mixkit-party-horn-sound-2927.mp3'
+            ];
+            
+            // Play sounds with delays
+            sounds.forEach((soundUrl, index) => {
+                setTimeout(() => {
+                    const audio = new Audio(soundUrl);
+                    audio.volume = 0.3;
+                    audio.play();
+                }, index * 500);
+            });
+        }, 500);
+        
+        showToast('🎉🎂 Celebration Time! Crackles activated! 🎂🎉');
+    }
+
+    // Image upload functions
+    // URL button click handler
+    document.querySelector('.upload-btn[for="memoryUrlInput"]').addEventListener('click', function(e) {
+        e.preventDefault();
+        urlInputContainer.style.display = urlInputContainer.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Handle URL input
+    memoryUrlInput.addEventListener('input', function(e) {
+        if (e.target.value) {
+            previewImage.src = e.target.value;
+            imagePreview.style.display = 'block';
+            currentImageData = e.target.value;
+            
+            // Test if image loads
+            previewImage.onload = function() {
                 showToast('Image loaded successfully!');
             };
-            reader.readAsDataURL(file);
-        });
-
-        // Add memory function
-        function addMemory() {
-            const caption = document.getElementById('memoryCaption').value.trim();
-            
-            if (!currentImageData && !previewImage.src) {
-                showToast('Please add an image first', 'error');
-                return;
-            }
-            
-            if (!caption) {
-                showToast('Please enter a caption', 'error');
-                return;
-            }
-            
-            // Add to memory grid
-            const memoryGrid = document.getElementById('memoryGrid');
-            const photoItem = document.createElement('div');
-            photoItem.className = 'photo-item';
-            photoItem.innerHTML = `
-                <img src="${currentImageData || previewImage.src}" alt="${caption}" onerror="this.src='https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'">
-                <div class="photo-caption">${caption}</div>
-            `;
-            
-            memoryGrid.appendChild(photoItem);
-            
-            showToast('Memory added successfully!');
-            
-            // Reset form
-            document.getElementById('memoryCaption').value = '';
-            document.getElementById('memoryUrl').value = '';
+            previewImage.onerror = function() {
+                showToast('Failed to load image. Please check URL.', 'error');
+            };
+        } else {
             imagePreview.style.display = 'none';
-            previewImage.src = '';
             currentImageData = null;
-            memoryUpload.value = '';
-            urlInputContainer.style.display = 'none';
         }
+    });
 
-        // Share page function
-        function sharePage() {
-            if (navigator.share) {
-                navigator.share({
-                    title: `Happy Birthday ${BIRTHDAY_NAME}!`,
-                    text: `Send birthday wishes to ${BIRTHDAY_NAME} on this interactive page! Birthday: February 2026`,
-                    url: window.location.href,
-                })
-                .then(() => showToast('Thanks for sharing!'))
-                .catch((error) => console.log('Error sharing:', error));
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                showToast('Link copied to clipboard!');
-            }
+    // Handle file upload
+    memoryUpload.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        if (!file.type.match('image.*')) {
+            showToast('Please select an image file', 'error');
+            return;
         }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            imagePreview.style.display = 'block';
+            currentImageData = e.target.result;
+            showToast('Image loaded successfully!');
+        };
+        reader.readAsDataURL(file);
+    });
 
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
+    // Add memory function
+    function addMemory() {
+        const caption = document.getElementById('memoryCaption').value.trim();
+        
+        if (!currentImageData && !previewImage.src) {
+            showToast('Please add an image first', 'error');
+            return;
+        }
+        
+        if (!caption) {
+            showToast('Please enter a caption', 'error');
+            return;
+        }
+        
+        // Add to memory grid
+        const memoryGrid = document.getElementById('memoryGrid');
+        const photoItem = document.createElement('div');
+        photoItem.className = 'photo-item';
+        photoItem.innerHTML = `
+            <img src="${currentImageData || previewImage.src}" alt="${caption}" onerror="this.src='https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'">
+            <div class="photo-caption">${caption}</div>
+        `;
+        
+        memoryGrid.appendChild(photoItem);
+        
+        showToast('Memory added successfully!');
+        
+        // Reset form
+        document.getElementById('memoryCaption').value = '';
+        document.getElementById('memoryUrl').value = '';
+        imagePreview.style.display = 'none';
+        previewImage.src = '';
+        currentImageData = null;
+        memoryUpload.value = '';
+        urlInputContainer.style.display = 'none';
+    }
+
+    // Share page function
+    function sharePage() {
+        if (navigator.share) {
+            navigator.share({
+                title: `Happy Birthday ${BIRTHDAY_NAME}!`,
+                text: `Send birthday wishes to ${BIRTHDAY_NAME} on this interactive page! Birthday: February 2026`,
+                url: window.location.href,
+            })
+            .then(() => showToast('Thanks for sharing!'))
+            .catch((error) => console.log('Error sharing:', error));
+        } else {
+            navigator.clipboard.writeText(window.location.href);
+            showToast('Link copied to clipboard!');
+        }
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load wishes from Firebase - YEH IMPORTANT HAI
+        loadWishesFromFirebase();
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        
+        updateSurpriseCountdown();
+        setInterval(updateSurpriseCountdown, 1000);
+        
+        // Check if birthday has arrived
+        const birthday = new Date(BIRTHDAY_DATE).getTime();
+        const now = new Date().getTime();
+        
+        if (now >= birthday) {
+            document.querySelector('.header h2').textContent = "Today is LAIBA's Birthday! 🥳";
             
-            updateSurpriseCountdown();
-            setInterval(updateSurpriseCountdown, 1000);
-            
-            // Check if birthday has arrived
-            const birthday = new Date(BIRTHDAY_DATE).getTime();
-            const now = new Date().getTime();
-            
-            if (now >= birthday) {
-                document.querySelector('.header h2').textContent = "Today is LAIBA's Birthday! 🥳";
-                
-                const specialMessage = document.createElement('div');
-                specialMessage.innerHTML = `<p style="color: white; font-size: 1.2rem; margin-top: 20px;">🎂 Wishing you the happiest birthday ever! 🎂</p>`;
-                document.querySelector('.header').appendChild(specialMessage);
-            } else if (now >= birthday - 86400000) { // One day before
-                document.querySelector('.header h2').textContent = "LAIBA's birthday is tomorrow! 🎊";
-            }
-            
-            // Check if surprise should be unlocked
-            const unlockDate = new Date(SURPRISE_UNLOCK_DATE).getTime();
-            if (now >= unlockDate) {
-                document.getElementById('lockedState').classList.add('hidden');
-                document.getElementById('unlockedState').classList.remove('hidden');
-                document.getElementById('surpriseStatus').innerHTML = 
-                    '<p><i class="fas fa-gift"></i> Your surprise is ready! Click the heart!</p>';
-            }
-            
-            // Initialize stats
-            updateStats();
-            
-            // Remove any example wish
-            wishesList.innerHTML = '';
-        });
-    </script>
+            const specialMessage = document.createElement('div');
+            specialMessage.innerHTML = `<p style="color: white; font-size: 1.2rem; margin-top: 20px;">🎂 Wishing you the happiest birthday ever! 🎂</p>`;
+            document.querySelector('.header').appendChild(specialMessage);
+        } else if (now >= birthday - 86400000) { // One day before
+            document.querySelector('.header h2').textContent = "LAIBA's birthday is tomorrow! 🎊";
+        }
+        
+        // Check if surprise should be unlocked
+        const unlockDate = new Date(SURPRISE_UNLOCK_DATE).getTime();
+        if (now >= unlockDate) {
+            document.getElementById('lockedState').classList.add('hidden');
+            document.getElementById('unlockedState').classList.remove('hidden');
+            document.getElementById('surpriseStatus').innerHTML = 
+                '<p><i class="fas fa-gift"></i> Your surprise is ready! Click the heart!</p>';
+        }
+        
+        // Remove any example wish
+        wishesList.innerHTML = '';
+    });
+</script>
 </body>
 </html>
