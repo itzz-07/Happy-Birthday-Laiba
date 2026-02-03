@@ -2,6 +2,7 @@
 const firebaseConfig = {
   apiKey: "AIzaSyCLE0V86QwtGM4T-xR9VNQh8a6eM6lQCrA",
   authDomain: "laiba-00.firebaseapp.com",
+  databaseURL: "https://laiba-00-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "laiba-00",
   storageBucket: "laiba-00.firebasestorage.app",
   messagingSenderId: "483377362620",
