@@ -1860,6 +1860,131 @@ img {
     z-index: 1;
     opacity: 0.1;
 }
+/* Advanced Screenshot Protection */
+.screenshot-protection {
+    display: none;
+}
+
+/* Black screen when screenshot is detected */
+.black-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black !important;
+    z-index: 999999;
+    display: none;
+}
+
+.black-screen.active {
+    display: block;
+    animation: flashScreen 0.5s;
+}
+
+@keyframes flashScreen {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Make images harder to capture */
+.modal-image {
+    /* Add subtle noise to image */
+    filter: url(#noiseFilter);
+    position: relative;
+}
+
+/* SVG filter for visual distortion */
+svg {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+/* Prevent iframe embedding */
+body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Disable various selection methods */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+/* Add visual markers that appear in screenshots */
+.watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+    animation: moveWatermark 20s linear infinite;
+}
+
+@keyframes moveWatermark {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Modal specific protection */
+.fullscreen-modal {
+    /* Make it harder to capture */
+    backdrop-filter: blur(0.5px);
+}
+
+.modal-container {
+    /* Add subtle animation that affects screenshots */
+    animation: subtlePulse 2s infinite;
+}
+
+@keyframes subtlePulse {
+    0%, 100% { opacity: 0.99; }
+    50% { opacity: 1; }
+}
+/* Extra modal protection */
+.protected-mode .modal-image {
+    filter: url(#displacementFilter) blur(0.3px);
+    animation: imageProtect 2s infinite;
+}
+
+@keyframes imageProtect {
+    0%, 100% { opacity: 0.98; }
+    50% { opacity: 1; }
+}
+
+/* Make it very hard to select anything in modal */
+.fullscreen-modal * {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important;
+}
+
+/* Add flicker effect that affects screenshots */
+@keyframes antiScreenshot {
+    0% { filter: brightness(100%) contrast(100%); }
+    25% { filter: brightness(100.5%) contrast(100.5%); }
+    50% { filter: brightness(99.5%) contrast(99.5%); }
+    75% { filter: brightness(100.2%) contrast(100.2%); }
+    100% { filter: brightness(100%) contrast(100%); }
+}
+
+.modal-container {
+    animation: antiScreenshot 0.5s infinite;
+}
     </style>
 </head>
 <body>
@@ -2225,6 +2350,15 @@ img {
 <div class="privacy-notice" id="privacyNotice">
     <i class="fas fa-lock"></i> Protected
 </div>
+<!-- Add this before closing body tag -->
+<svg style="position: absolute; width: 0; height: 0;">
+    <defs>
+        <filter id="displacementFilter">
+            <feTurbulence type="turbulence" baseFrequency="0.01" numOctaves="1" result="turbulence"/>
+            <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+    </defs>
+</svg>
     <script>
         // FIREBASE CONFIGURATION
         const firebaseConfig = {
@@ -3097,6 +3231,310 @@ function addPrivacyOverlay(imageElement) {
     imageElement.parentNode.appendChild(overlay);
 }
 
+// Advanced Screenshot Protection
+class ScreenshotProtector {
+    constructor() {
+        this.isProtected = false;
+        this.blackScreen = null;
+        this.init();
+    }
+    
+    init() {
+        this.createBlackScreen();
+        this.setupProtection();
+        this.addWatermark();
+        this.detectScreenCapture();
+    }
+    
+    createBlackScreen() {
+        this.blackScreen = document.createElement('div');
+        this.blackScreen.className = 'black-screen';
+        document.body.appendChild(this.blackScreen);
+    }
+    
+    addWatermark() {
+        // Add rotating watermark
+        const watermark = document.createElement('div');
+        watermark.className = 'watermark';
+        watermark.innerHTML = '🎂 HAPPY BIRTHDAY LAIBA 🎂 • 🎂 HAPPY BIRTHDAY LAIBA 🎂 • 🎂 HAPPY BIRTHDAY LAIBA 🎂';
+        document.body.appendChild(watermark);
+        
+        // Add SVG filter for noise
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+        filter.setAttribute('id', 'noiseFilter');
+        
+        const feTurbulence = document.createElementNS('http://www.w3.org/2000/svg', 'feTurbulence');
+        feTurbulence.setAttribute('type', 'fractalNoise');
+        feTurbulence.setAttribute('baseFrequency', '0.01');
+        feTurbulence.setAttribute('numOctaves', '1');
+        feTurbulence.setAttribute('result', 'noise');
+        
+        const feColorMatrix = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
+        feColorMatrix.setAttribute('type', 'matrix');
+        feColorMatrix.setAttribute('values', '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.02 0');
+        
+        filter.appendChild(feTurbulence);
+        filter.appendChild(feColorMatrix);
+        svg.appendChild(filter);
+        document.body.appendChild(svg);
+    }
+    
+    setupProtection() {
+        // Block right-click
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            this.showBlackScreen();
+            this.showToast('⚠️ Screenshots are protected');
+            return false;
+        });
+        
+        // Block keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Block Print Screen, Ctrl+S, etc.
+            const blockedKeys = ['PrintScreen', 'F12', 'F11'];
+            const blockedCombos = [
+                { ctrl: true, key: 's' },
+                { ctrl: true, shift: true, key: 's' },
+                { ctrl: true, key: 'p' },
+                { ctrl: true, shift: true, key: 'i' },
+                { ctrl: true, shift: true, key: 'j' },
+                { ctrl: true, shift: true, key: 'c' }
+            ];
+            
+            // Check single keys
+            if (blockedKeys.includes(e.key)) {
+                e.preventDefault();
+                this.showBlackScreen();
+                this.showToast('⚠️ Screenshot attempt blocked');
+                return false;
+            }
+            
+            // Check key combinations
+            for (const combo of blockedCombos) {
+                if ((combo.ctrl === e.ctrlKey || combo.ctrl === undefined) &&
+                    (combo.shift === e.shiftKey || combo.shift === undefined) &&
+                    combo.key.toLowerCase() === e.key.toLowerCase()) {
+                    e.preventDefault();
+                    this.showBlackScreen();
+                    this.showToast('⚠️ This action is restricted');
+                    return false;
+                }
+            }
+        });
+        
+        // Detect iframe embedding
+        if (window.self !== window.top) {
+            this.showBlackScreen();
+            document.body.innerHTML = '<div style="color:white;text-align:center;padding:50px;">⚠️ This content cannot be embedded</div>';
+        }
+        
+        // Detect DevTools opening
+        this.detectDevTools();
+        
+        // Periodic protection check
+        setInterval(() => this.checkProtection(), 1000);
+    }
+    
+    showBlackScreen() {
+        if (this.blackScreen) {
+            this.blackScreen.classList.add('active');
+            setTimeout(() => {
+                this.blackScreen.classList.remove('active');
+            }, 500);
+        }
+    }
+    
+    showToast(message) {
+        // Use your existing toast function or create a new one
+        if (typeof showToast === 'function') {
+            showToast(message, 'warning');
+        } else {
+            console.log('TOAST:', message);
+        }
+    }
+    
+    detectDevTools() {
+        // Basic DevTools detection
+        const devToolsCheck = {
+            isOpen: false,
+            check: function() {
+                const threshold = 160;
+                const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+                const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+                
+                if (widthThreshold || heightThreshold) {
+                    if (!this.isOpen) {
+                        this.isOpen = true;
+                        this.showBlackScreen();
+                        this.showToast('⚠️ Developer tools detected');
+                    }
+                } else {
+                    this.isOpen = false;
+                }
+            }
+        };
+        
+        // Check periodically
+        setInterval(() => devToolsCheck.check(), 1000);
+        
+        // Also check on resize
+        window.addEventListener('resize', () => devToolsCheck.check());
+    }
+    
+    detectScreenCapture() {
+        // Experimental: Try to detect screen capture API usage
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+            const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+            navigator.mediaDevices.getDisplayMedia = function(constraints) {
+                this.showBlackScreen();
+                this.showToast('⚠️ Screen sharing not allowed');
+                return Promise.reject(new Error('Screen sharing disabled'));
+            }.bind(this);
+        }
+        
+        // Try to override canvas capture
+        if (HTMLCanvasElement.prototype.toDataURL) {
+            const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+            HTMLCanvasElement.prototype.toDataURL = function(type, quality) {
+                this.showBlackScreen();
+                this.showToast('⚠️ Canvas capture blocked');
+                return '';
+            };
+        }
+    }
+    
+    checkProtection() {
+        // Check if page is visible (not minimized or tab switched)
+        if (document.visibilityState === 'hidden') {
+            // User might be taking screenshot via OS
+            this.showBlackScreen();
+        }
+        
+        // Check for external monitoring
+        if (window.debugger) {
+            this.showBlackScreen();
+            this.showToast('⚠️ Debugging detected');
+        }
+    }
+}
+
+// Modify modal opening to add extra protection
+function openFullscreenModal(imageSrc, caption, index) {
+    currentImageIndex = index;
+    zoomLevel = 1;
+    
+    const modal = document.getElementById('fullscreenModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const modalCounter = document.getElementById('modalCounter');
+    
+    // Add protection class
+    modal.classList.add('protected-mode');
+    
+    // Create protected image with additional security
+    const protectedImage = new Image();
+    protectedImage.onload = function() {
+        modalImage.src = imageSrc;
+        
+        // Add canvas-based protection
+        addCanvasProtection(modalImage);
+    };
+    protectedImage.src = imageSrc;
+    
+    modalCaption.textContent = caption || 'Memory';
+    modalCounter.textContent = `${index + 1} / ${allMemories.length}`;
+    
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    isModalOpen = true;
+    
+    // Add extra protection listeners
+    addModalProtection();
+    
+    // Add keyboard listeners
+    document.addEventListener('keydown', handleModalKeyboard);
+}
+
+function addCanvasProtection(imgElement) {
+    // Try to render image through canvas for extra protection
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = imgElement.naturalWidth || 800;
+    canvas.height = imgElement.naturalHeight || 600;
+    
+    // Draw image with subtle noise
+    ctx.drawImage(imgElement, 0, 0);
+    
+    // Add noise overlay
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.01)';
+    for (let i = 0; i < 1000; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        ctx.fillRect(x, y, 1, 1);
+    }
+    
+    // Convert back to data URL
+    imgElement.src = canvas.toDataURL('image/jpeg', 0.9);
+}
+
+function addModalProtection() {
+    // Disable all text selection in modal
+    const modal = document.getElementById('fullscreenModal');
+    modal.style.userSelect = 'none';
+    modal.style.webkitUserSelect = 'none';
+    
+    // Add event listeners for extra protection
+    modal.addEventListener('copy', (e) => {
+        e.preventDefault();
+        showToast('⚠️ Copying disabled');
+    });
+    
+    modal.addEventListener('cut', (e) => {
+        e.preventDefault();
+        showToast('⚠️ Cutting disabled');
+    });
+    
+    modal.addEventListener('paste', (e) => {
+        e.preventDefault();
+        showToast('⚠️ Pasting disabled');
+    });
+}
+
+// Initialize screenshot protector
+let screenshotProtector = null;
+
+// Initialize function mein add karo
+document.addEventListener('DOMContentLoaded', function() {
+    currentUser = getOrCreateUserId();
+    
+    loadWishesFromFirebase();
+    loadMemoriesFromFirebase();
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    
+    updateSurpriseCountdown();
+    setInterval(updateSurpriseCountdown, 1000);
+    
+    const birthday = new Date(BIRTHDAY_DATE).getTime();
+    const now = new Date().getTime();
+    
+    if (now >= birthday) {
+        document.querySelector('.header h2').textContent = "Today is LAIBA's Birthday! 🥳";
+    }
+    
+    const unlockDate = new Date(SURPRISE_UNLOCK_DATE).getTime();
+    if (now >= unlockDate) {
+        document.getElementById('lockedState').classList.add('hidden');
+        document.getElementById('unlockedState').classList.remove('hidden');
+    }
+    
+    // Initialize screenshot protector
+    screenshotProtector = new ScreenshotProtector();
+});
 // Initialize function mein privacy protection add karo
 document.addEventListener('DOMContentLoaded', function() {
     currentUser = getOrCreateUserId();
