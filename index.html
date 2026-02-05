@@ -1661,6 +1661,74 @@
         transform: scale(1);
     }
 }
+/* Canvas-based protection */
+.canvas-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.protected-canvas,
+.protection-overlay,
+.animation-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.protection-overlay {
+    mix-blend-mode: overlay;
+    opacity: 0.3;
+}
+
+.animation-layer {
+    mix-blend-mode: screen;
+}
+
+/* Black screen flash */
+@keyframes flash {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Protection triggered effect */
+.protection-triggered .protected-canvas {
+    animation: distort 1s;
+    filter: blur(5px) brightness(0.5);
+}
+
+@keyframes distort {
+    0% { filter: blur(0) brightness(1); }
+    50% { filter: blur(10px) brightness(0.3); }
+    100% { filter: blur(0) brightness(1); }
+}
+
+/* Hide regular image when using canvas */
+.canvas-container:not(:empty) + .modal-image {
+    display: none !important;
+}
+
+/* Make canvases unselectable */
+canvas {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* Add more aggressive protection */
+body.protected * {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    -khtml-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+}
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
@@ -2359,6 +2427,16 @@ body {
         </filter>
     </defs>
 </svg>
+<!-- Add this in body -->
+<noscript>
+    <style>
+        .photo-item img { pointer-events: none; }
+        .fullscreen-modal { display: none !important; }
+    </style>
+    <div style="color: red; padding: 20px; text-align: center;">
+        JavaScript is required to view protected content
+    </div>
+</noscript>
     <script>
         // FIREBASE CONFIGURATION
         const firebaseConfig = {
@@ -3619,7 +3697,376 @@ document.querySelector('.download-btn')?.removeEventListener('click', downloadIm
                 }
             });
         }
+// Replace the current openFullscreenModal function with this:
+function openFullscreenModal(imageSrc, caption, index) {
+    currentImageIndex = index;
+    
+    const modal = document.getElementById('fullscreenModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalCaption = document.getElementById('modalCaption');
+    const modalCounter = document.getElementById('modalCounter');
+    
+    // Clear any existing content
+    modalImage.style.display = 'none';
+    
+    // Create canvas container
+    let canvasContainer = modal.querySelector('.canvas-container');
+    if (!canvasContainer) {
+        canvasContainer = document.createElement('div');
+        canvasContainer.className = 'canvas-container';
+        modal.querySelector('.modal-container').insertBefore(canvasContainer, modalImage);
+    }
+    canvasContainer.innerHTML = '';
+    
+    // Create multiple canvases for protection
+    const mainCanvas = document.createElement('canvas');
+    const overlayCanvas = document.createElement('canvas');
+    const animationCanvas = document.createElement('canvas');
+    
+    mainCanvas.className = 'protected-canvas';
+    overlayCanvas.className = 'protection-overlay';
+    animationCanvas.className = 'animation-layer';
+    
+    canvasContainer.appendChild(mainCanvas);
+    canvasContainer.appendChild(overlayCanvas);
+    canvasContainer.appendChild(animationCanvas);
+    
+    // Load and draw image on canvas
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+        // Set canvas dimensions
+        const maxWidth = window.innerWidth * 0.9;
+        const maxHeight = window.innerHeight * 0.8;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+        }
+        if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+        }
+        
+        [mainCanvas, overlayCanvas, animationCanvas].forEach(canvas => {
+            canvas.width = width;
+            canvas.height = height;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+        });
+        
+        // Draw image on main canvas with protection
+        const ctx = mainCanvas.getContext('2d');
+        
+        // Method 1: Draw in pieces with time delay
+        drawProtectedImage(ctx, img, width, height);
+        
+        // Method 2: Add moving overlay
+        createMovingOverlay(overlayCanvas, width, height);
+        
+        // Method 3: Add flickering animation
+        createFlickerEffect(animationCanvas, width, height);
+        
+        // Start protection monitoring
+        startCanvasProtection(mainCanvas);
+    };
+    
+    img.onerror = function() {
+        // Fallback to regular image
+        modalImage.style.display = 'block';
+        modalImage.src = imageSrc;
+        canvasContainer.style.display = 'none';
+    };
+    
+    img.src = imageSrc;
+    
+    modalCaption.textContent = caption || 'Memory';
+    modalCounter.textContent = `${index + 1} / ${allMemories.length}`;
+    
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    isModalOpen = true;
+    
+    // Add extra protection
+    addAdvancedProtection();
+    
+    // Add keyboard listeners
+    document.addEventListener('keydown', handleModalKeyboard);
+}
 
+function drawProtectedImage(ctx, img, width, height) {
+    // Draw image in multiple pieces with slight offsets
+    const pieceSize = 50;
+    let pieces = [];
+    
+    for (let y = 0; y < height; y += pieceSize) {
+        for (let x = 0; x < width; x += pieceSize) {
+            pieces.push({x, y, 
+                width: Math.min(pieceSize, width - x),
+                height: Math.min(pieceSize, height - y)
+            });
+        }
+    }
+    
+    // Shuffle pieces
+    pieces.sort(() => Math.random() - 0.5);
+    
+    // Draw pieces one by one with delay
+    let i = 0;
+    function drawNextPiece() {
+        if (i < pieces.length) {
+            const piece = pieces[i];
+            ctx.drawImage(
+                img,
+                piece.x, piece.y, piece.width, piece.height,
+                piece.x + (Math.random() * 2 - 1), // Slight random offset
+                piece.y + (Math.random() * 2 - 1),
+                piece.width, piece.height
+            );
+            i++;
+            setTimeout(drawNextPiece, 10); // 10ms delay between pieces
+        } else {
+            // Final complete draw
+            ctx.globalAlpha = 0.3;
+            ctx.drawImage(img, 0, 0, width, height);
+            ctx.globalAlpha = 1.0;
+        }
+    }
+    
+    drawNextPiece();
+}
+
+function createMovingOverlay(canvas, width, height) {
+    const ctx = canvas.getContext('2d');
+    let positions = [];
+    
+    // Create multiple moving dots
+    for (let i = 0; i < 20; i++) {
+        positions.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            size: 2 + Math.random() * 3,
+            speedX: (Math.random() - 0.5) * 2,
+            speedY: (Math.random() - 0.5) * 2
+        });
+    }
+    
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        
+        positions.forEach(pos => {
+            pos.x += pos.speedX;
+            pos.y += pos.speedY;
+            
+            // Bounce off edges
+            if (pos.x < 0 || pos.x > width) pos.speedX *= -1;
+            if (pos.y < 0 || pos.y > height) pos.speedY *= -1;
+            
+            // Draw semi-transparent dot
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.05 + Math.random() * 0.05})`;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, pos.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+}
+
+function createFlickerEffect(canvas, width, height) {
+    const ctx = canvas.getContext('2d');
+    
+    function flicker() {
+        const alpha = 0.02 + Math.random() * 0.03;
+        ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+        ctx.fillRect(0, 0, width, height);
+        
+        setTimeout(() => {
+            ctx.clearRect(0, 0, width, height);
+            setTimeout(flicker, 100 + Math.random() * 200);
+        }, 50);
+    }
+    
+    flicker();
+}
+
+function startCanvasProtection(canvas) {
+    // Monitor canvas for read attempts
+    const originalGetImageData = canvas.getContext('2d').getImageData;
+    canvas.getContext('2d').getImageData = function(...args) {
+        showBlackScreen();
+        showToast('⚠️ Image capture attempt blocked');
+        return originalGetImageData.apply(this, args);
+    };
+    
+    // Override toDataURL and toBlob
+    const originalToDataURL = canvas.toDataURL;
+    canvas.toDataURL = function(...args) {
+        showBlackScreen();
+        showToast('⚠️ Screenshot attempt detected');
+        return '';
+    };
+    
+    const originalToBlob = canvas.toBlob;
+    if (originalToBlob) {
+        canvas.toBlob = function(...args) {
+            showBlackScreen();
+            showToast('⚠️ Image capture blocked');
+            if (args[1]) args[1](null);
+        };
+    }
+}
+
+function addAdvancedProtection() {
+    // Block various screenshot methods
+    const blockedEvents = [
+        'keydown', 'keyup', 'keypress',
+        'mousedown', 'mouseup', 'click',
+        'touchstart', 'touchend', 'touchmove'
+    ];
+    
+    blockedEvents.forEach(event => {
+        document.addEventListener(event, function(e) {
+            // If multiple rapid events (possible screenshot shortcut)
+            if (e.type === 'keydown' && 
+                (e.key === 'PrintScreen' || 
+                 (e.ctrlKey && e.key === 's') ||
+                 (e.metaKey && e.key === 's'))) {
+                e.preventDefault();
+                triggerProtection();
+                return false;
+            }
+        }, { passive: false });
+    });
+    
+    // Detect if page loses focus (user might be taking screenshot)
+    let blurTime = 0;
+    window.addEventListener('blur', () => {
+        blurTime = Date.now();
+    });
+    
+    window.addEventListener('focus', () => {
+        if (blurTime && Date.now() - blurTime < 1000) {
+            // User quickly switched away and back (possible screenshot)
+            triggerProtection();
+        }
+    });
+}
+
+function triggerProtection() {
+    // Show black screen
+    showBlackScreen();
+    
+    // Add visual distortion
+    const modal = document.getElementById('fullscreenModal');
+    if (modal.classList.contains('active')) {
+        modal.classList.add('protection-triggered');
+        setTimeout(() => {
+            modal.classList.remove('protection-triggered');
+        }, 1000);
+    }
+    
+    // Show warning
+    showToast('⚠️ Screenshot protection activated');
+}
+
+function showBlackScreen() {
+    const blackScreen = document.createElement('div');
+    blackScreen.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        z-index: 999999;
+        animation: flash 0.3s;
+    `;
+    
+    document.body.appendChild(blackScreen);
+    
+    setTimeout(() => {
+        if (blackScreen.parentNode) {
+            blackScreen.parentNode.removeChild(blackScreen);
+        }
+    }, 300);
+}
+// Add this to your initialization
+function initializeScreenshotProtection() {
+    // Add protected class to body
+    document.body.classList.add('protected');
+    
+    // Override console methods
+    const originalConsole = {
+        log: console.log,
+        warn: console.warn,
+        error: console.error,
+        info: console.info
+    };
+    
+    // Block console during image viewing
+    ['log', 'warn', 'error', 'info', 'debug', 'table', 'dir'].forEach(method => {
+        console[method] = function(...args) {
+            // Allow only certain messages
+            const allowedPrefixes = ['[DEBUG]', '[INFO]'];
+            const message = args.join(' ');
+            
+            if (!allowedPrefixes.some(prefix => message.startsWith(prefix))) {
+                // Block console output during protected mode
+                if (document.querySelector('.fullscreen-modal.active')) {
+                    showToast('⚠️ Console access restricted');
+                    return;
+                }
+            }
+            
+            originalConsole[method].apply(console, args);
+        };
+    });
+    
+    // Detect screen sharing attempts
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+        const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+        navigator.mediaDevices.getDisplayMedia = async function(constraints) {
+            showBlackScreen();
+            showToast('⚠️ Screen sharing not allowed');
+            throw new Error('Screen sharing disabled for privacy');
+        };
+    }
+    
+    // Monitor for external tools
+    setInterval(() => {
+        // Check for dev tools
+        const start = performance.now();
+        debugger;
+        const end = performance.now();
+        
+        if (end - start > 100) {
+            // Debugger was active
+            triggerProtection();
+        }
+        
+        // Check window size (dev tools might have changed it)
+        const widthDifference = window.outerWidth - window.innerWidth;
+        const heightDifference = window.outerHeight - window.innerHeight;
+        
+        if (widthDifference > 200 || heightDifference > 200) {
+            // Likely dev tools open
+            triggerProtection();
+        }
+    }, 2000);
+}
+
+// Call this in DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    initializeScreenshotProtection();
+});
         // Add comment
         function addComment(wishId) {
             const commentInput = document.getElementById(`commentInput-${wishId}`);
