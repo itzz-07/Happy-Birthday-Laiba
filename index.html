@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +7,7 @@
     <title>Happy Birthday LAIBA! 🎉</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/hugh-is-life-personal-use" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     
@@ -69,7 +71,7 @@
             margin-bottom: 30px;
         }
 
-        .birthday-person {
+        /* .birthday-person {
             font-size: 3rem;
             color: var(--pink);
             font-weight: 700;
@@ -80,7 +82,122 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }
+        } */
+
+        .birthday-person {
+    font-family: 'Hugh is Life Personal Use', 'Dancing Script', cursive;
+    /* Rest same */
+}
+
+
+        .birthday-person {
+    font-size: 3.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #ffffff;
+    background: none;
+    -webkit-text-fill-color: initial;
+    animation: colorChange 3s infinite alternate, neonPulse 1.5s infinite;
+    position: relative;
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* Color changing animation - Rainbow colors */
+@keyframes colorChange {
+    0% {
+        text-shadow: 
+            0 0 5px #ff00ff,
+            0 0 10px #ff00ff,
+            0 0 20px #ff00ff,
+            0 0 40px #ff00ff,
+            0 0 80px #ff00ff;
+    }
+    25% {
+        text-shadow: 
+            0 0 5px #00ffff,
+            0 0 10px #00ffff,
+            0 0 20px #00ffff,
+            0 0 40px #00ffff,
+            0 0 80px #00ffff;
+    }
+    50% {
+        text-shadow: 
+            0 0 5px #ffff00,
+            0 0 10px #ffff00,
+            0 0 20px #ffff00,
+            0 0 40px #ffff00,
+            0 0 80px #ffff00;
+    }
+    75% {
+        text-shadow: 
+            0 0 5px #00ff00,
+            0 0 10px #00ff00,
+            0 0 20px #00ff00,
+            0 0 40px #00ff00,
+            0 0 80px #00ff00;
+    }
+    100% {
+        text-shadow: 
+            0 0 5px #ff0000,
+            0 0 10px #ff0000,
+            0 0 20px #ff0000,
+            0 0 40px #ff0000,
+            0 0 80px #ff0000;
+    }
+}
+
+/* Pulse effect */
+@keyframes neonPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.02);
+        opacity: 0.9;
+    }
+}
+
+/* Glowing background effect */
+.birthday-person::before {
+    content: 'LAIBA!';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    color: transparent;
+    animation: bgColorChange 4s infinite alternate;
+}
+
+@keyframes bgColorChange {
+    0% {
+        text-shadow: 
+            0 0 20px #ff00ff,
+            0 0 30px #ff00ff,
+            0 0 40px #ff00ff;
+    }
+    33% {
+        text-shadow: 
+            0 0 20px #00ffff,
+            0 0 30px #00ffff,
+            0 0 40px #00ffff;
+    }
+    66% {
+        text-shadow: 
+            0 0 20px #ffff00,
+            0 0 30px #ffff00,
+            0 0 40px #ffff00;
+    }
+    100% {
+        text-shadow: 
+            0 0 20px #ff0000,
+            0 0 30px #ff0000,
+            0 0 40px #ff0000;
+    }
+}
 
         .main-content {
             display: grid;
