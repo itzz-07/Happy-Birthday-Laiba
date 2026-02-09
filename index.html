@@ -2860,7 +2860,7 @@ document.getElementById('fullscreenModal').addEventListener('click', function(e)
         }
 
         // Handle file upload
-        // memoryUpload.addEventListener('change', async function(e) {
+        memoryUpload.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
             
@@ -3174,7 +3174,7 @@ function openFullscreenModal(imageSrc, caption, index) {
     modalCaption.textContent = caption || 'Memory';
     modalCounter.textContent = `${index + 1} / ${allMemories.length}`;
     
-    // Add subtle watermark text for privacy
+    // Add subtle watermark text for privac
     modalImage.style.position = 'relative';
     
     // Show modal
