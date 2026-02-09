@@ -2108,23 +2108,23 @@ img {
             </div>
         </div>
 
-        <!-- Memories Section with Image Upload -->
-        <!-- <section class="memories-section">
+        <!-- Memories Section with Image Upload --> -->
+        <section class="memories-section">
             <h2 class="section-title">Memory Lane</h2>
             <p>Add your favorite memories LAIBA!</p> -->
             
             <!-- Image Upload Section -->
-            <!-- <div class="image-upload-section">
+            <div class="image-upload-section">
                 <h4>Add Memory Image</h4>
                 <div class="upload-options">
                     <label class="upload-btn" for="memoryUpload">
                         <i class="fas fa-upload"></i> Choose Image
                         <input type="file" id="memoryUpload" accept="image/*">
                     </label>
-                </div> -->
+                </div>
                 
                 <!-- URL Input Container -->
-                <!-- <div class="url-input-container">
+                <div class="url-input-container">
                     <label for="memoryUrl">Image URL:</label>
                     <input type="url" id="memoryUrl" class="form-control" placeholder="https://example.com/image.jpg">
                 </div>
@@ -2143,7 +2143,7 @@ img {
                         <i class="fas fa-plus"></i> Add Memory
                     </button>
                 </div>
-            </div> -->
+            </div>
             
             <!-- Memory Grid -->
             <div class="loading-spinner" id="memoriesLoading">
@@ -2860,7 +2860,7 @@ document.getElementById('fullscreenModal').addEventListener('click', function(e)
         }
 
         // Handle file upload
-        memoryUpload.addEventListener('change', async function(e) {
+        // memoryUpload.addEventListener('change', async function(e) {
             const file = e.target.files[0];
             if (!file) return;
             
